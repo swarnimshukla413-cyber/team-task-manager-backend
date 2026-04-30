@@ -1,6 +1,5 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
-// const auth = require("../middleware/auth"); // keep disabled for now
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -8,27 +7,41 @@ const router = express.Router();
 // Create Project
 router.post("/", async (req, res) => {
   try {
-    // ensure user exists (FIX for your error)
-    await prisma.user.upsert({
-      where: { id: 1 },
-      update: {},
-      create: {
-        id: 1,
-        email: "test@test.com",
-        password: "dummy"
-      }
+    const { name } = req.body;
+
+    // 🔴 Validate input (important)
+    if (!name) {
+      return res.status(400).json({ error: "Project name is required" });
+    }
+
+    // ✅ Ensure user exists
+    let user = await prisma.user.findUnique({
+      where: { id: 1 }
     });
 
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: 1,
+          name: "Test User",        // ✅ REQUIRED FIX
+          email: "test@test.com",
+          password: "dummy"
+        }
+      });
+    }
+
+    // ✅ Create project
     const project = await prisma.project.create({
       data: {
-        name: req.body.name,
-        ownerId: 1
+        name,
+        ownerId: user.id
       }
     });
 
     res.json(project);
+
   } catch (err) {
-    console.error(err);
+    console.error("PROJECT ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -42,6 +55,7 @@ router.get("/", async (req, res) => {
 
     res.json(projects);
   } catch (err) {
+    console.error("FETCH PROJECT ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
