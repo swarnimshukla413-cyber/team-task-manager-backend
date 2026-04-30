@@ -6,12 +6,12 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 // Create Project
-router.post("/", auth, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const project = await prisma.project.create({
       data: {
         name: req.body.name,
-        ownerId: req.user.id
+        ownerId:1
       }
     });
 
@@ -23,10 +23,10 @@ router.post("/", auth, async (req, res) => {
 });
 
 // Get Projects
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
-      where: { ownerId: req.user.id }
+      where: { ownerId:1 }
     });
 
     res.json(projects);
