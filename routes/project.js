@@ -9,21 +9,20 @@ router.post("/", async (req, res) => {
   try {
     const { name } = req.body;
 
-    // 🔴 Validate input (important)
     if (!name) {
       return res.status(400).json({ error: "Project name is required" });
     }
 
-    // ✅ Ensure user exists
+    // ✅ Check if user exists
     let user = await prisma.user.findUnique({
       where: { id: 1 }
     });
 
+    // ✅ Create user if not exists
     if (!user) {
       user = await prisma.user.create({
         data: {
-          id: 1,
-          name: "Test User",        // ✅ REQUIRED FIX
+          name: "Test User",
           email: "test@test.com",
           password: "dummy"
         }
@@ -55,7 +54,7 @@ router.get("/", async (req, res) => {
 
     res.json(projects);
   } catch (err) {
-    console.error("FETCH PROJECT ERROR:", err);
+    console.error("FETCH ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
