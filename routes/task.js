@@ -1,13 +1,12 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
-const auth = require("../middleware/auth");
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
 // Create Task
-router.post("/", auth, async (req, res) => {
-  const { title, dueDate, projectId, assignedTo } = req.body;
+router.post("/", async (req, res) => {
+  const { title, dueDate, projectId } = req.body;
 
   try {
     const task = await prisma.task.create({
@@ -15,7 +14,7 @@ router.post("/", auth, async (req, res) => {
         title,
         dueDate: new Date(dueDate),
         projectId,
-        assignedTo: req.user.id
+        assignedTo: 1 // TEMP user id
       }
     });
 
@@ -27,7 +26,7 @@ router.post("/", auth, async (req, res) => {
 });
 
 // Update Task
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const task = await prisma.task.update({
       where: { id: Number(req.params.id) },
@@ -41,11 +40,9 @@ router.put("/:id", auth, async (req, res) => {
 });
 
 // Get Tasks
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const tasks = await prisma.task.findMany({
-      where: { assignedTo: req.user.id }
-    });
+    const tasks = await prisma.task.findMany();
 
     res.json(tasks);
   } catch (err) {
